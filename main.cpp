@@ -1,6 +1,16 @@
 #include "fm_tx.h"
+#include <signal.h>
 
 using namespace std;
+
+fm_tx *fm = NULL;
+
+void signal_handler(int signum)
+{
+        cout << "signal caught: " << signum << endl;
+        fm->stop();
+        exit(0);
+}
 
 int main(int argc, char **argv)
 {
@@ -24,4 +34,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
