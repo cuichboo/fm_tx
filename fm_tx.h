@@ -15,6 +15,7 @@
 #include <osmosdr/ranges.h>
 #include <string>
 #include "resampler_xx.h"
+#include "pulseaudio/pa_source.h"
 
 class fm_tx
 {
@@ -33,6 +34,7 @@ class fm_tx
         fm_tx(const std::string filename,
              const std::string output_device,
              unsigned int decimation);
+        ~fm_tx(void);
         void start(void);
         void stop(void);
         void set_output_device(const std::string device);
@@ -88,13 +90,7 @@ class fm_tx
         gr::filter::iir_filter_ffd::sptr    preemph;
         gr::filter::interp_fir_filter_fff::sptr interpolator;
 
-#if 0
-#ifdef WITH_PULSEAUDIO
-        pa_sink_sptr              audio_snk;  /*!< Pulse audio sink. */
-#else
-        gr::audio::sink::sptr     audio_snk;  /*!< gr audio sink */
-#endif
-#endif
+        pa_source_sptr audio_src;  /*!< Pulse audio source. */
 };
 
 #endif

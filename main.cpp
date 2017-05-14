@@ -1,5 +1,7 @@
 #include "fm_tx.h"
 #include <signal.h>
+#include <getopt.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -8,28 +10,44 @@ fm_tx *fm = NULL;
 void signal_handler(int signum)
 {
         cout << "signal caught: " << signum << endl;
-        fm->stop();
+        delete fm;
         exit(0);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
-    std::string file = argv[1];
+    std::string file = "";
     std::string out_device = "hackrf=228acf";
-    fm_tx *fm = new fm_tx(file, out_device, 1);
-    double freq = 433e6;
+    int opt = 0;
+    float freq = 433e6;
 
+    while ((opt = getopt(argc, argv, "f:p:h")) > 0) {
+        switch (opt) {
+            case 'f':
+                freq = strtof(optarg, NULL);
+                break;
+            case 'p':
+                file = optarg;
+                break;
+            case 'h':
+            default:
+                cout << "usage: " << basename(argv[0]) << " [-f freq] -p wavfile(32k)" << endl;
+                return 0;
+            }
+    }
+
+    fm = new fm_tx(file, out_device, 1);
+
+    signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
+    signal(SIGQUIT, signal_handler);
+    signal(SIGSEGV, signal_handler);
+    
+    fm->set_rf_freq(freq);
     fm->start();
 
     while (1) {
         usleep(100000);
-        /*
-        fm->set_rf_freq(freq);
-        freq+=10e3;
-        cout << freq << endl;
-        if (freq >= 434e6)
-            freq = 433e6;
-            */
     }
 
     return 0;

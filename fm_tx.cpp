@@ -28,10 +28,18 @@ fm_tx::fm_tx(const std::string filename,
     float kl, kh, z1, p1, b0;
     float w_0dB, g;
     std::vector<double> btaps(2), ataps(2);
+    bool input_is_file = true;
 
     tb = gr::make_top_block("wbfm_tx");
     
-    wav_src = gr::blocks::wavfile_source::make(filename.c_str(), true);
+    if (!filename.empty()) {
+        wav_src = gr::blocks::wavfile_source::make(filename.c_str(), true);
+        input_is_file = true;
+    } else {
+        audio_src = make_pa_source("", d_audio_rate, 1, "wbfm_tx", "record");
+        input_is_file = false;
+    }
+
     output = osmosdr::sink::make(output_device);
     resample = make_resampler_cc((float)d_output_rate/(float)d_quad_rate);
 
@@ -105,12 +113,12 @@ fm_tx::fm_tx(const std::string filename,
 
     preemph = gr::filter::iir_filter_ffd::make(btaps, ataps, false);
 
-#if 1
-    tb->connect(wav_src, 0, interpolator, 0);
+    if (input_is_file) {
+        tb->connect(wav_src, 0, interpolator, 0);
+    } else {
+        tb->connect(audio_src, 0, interpolator, 0);
+    }
     tb->connect(interpolator, 0, preemph, 0);
-#else
-    tb->connect(wav_src, 0, preemph, 0);
-#endif
     tb->connect(preemph, 0, modulator, 0);
 
 
@@ -125,6 +133,11 @@ fm_tx::fm_tx(const std::string filename,
     output->set_if_gain(20);
     output->set_sample_rate(d_output_rate);
     output->set_center_freq(d_rf_freq);
+}
+
+fm_tx::~fm_tx(void)
+{
+    tb->stop();
 }
 
 void fm_tx::start(void)

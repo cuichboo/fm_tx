@@ -132,6 +132,7 @@ add_source_files(SRCS_LIST
     optfir.cpp
     optfir.h
 )
+add_subdirectory(pulseaudio)
 
 get_property(${PROJECT_NAME}_SOURCE GLOBAL PROPERTY SRCS_LIST)
 add_executable(${PROJECT_NAME} ${${PROJECT_NAME}_SOURCE} ${UIS_HDRS} ${RESOURCES_LIST})
@@ -139,6 +140,6 @@ target_link_libraries(${PROJECT_NAME}
     ${Boost_LIBRARIES}
     ${GNURADIO_ALL_LIBRARIES}
     ${GNURADIO_OSMOSDR_LIBRARIES}
-    #${PULSEAUDIO_LIBRARY}
-    #${PULSE-SIMPLE}
+    ${PULSEAUDIO_LIBRARY}
+    ${PULSE-SIMPLE}
 )
