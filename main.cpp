@@ -20,8 +20,11 @@ int main(int argc, char *argv[])
     std::string out_device = "hackrf=228acf";
     int opt = 0;
     float freq = 433e6;
+    float quad_rate = 320000.0f;
+    float audio_rate = 32000.0f;
+    float output_rate = 320000.0f;
 
-    while ((opt = getopt(argc, argv, "f:p:h")) > 0) {
+    while ((opt = getopt(argc, argv, "f:p:hq:a:o:")) > 0) {
         switch (opt) {
             case 'f':
                 freq = strtof(optarg, NULL);
@@ -29,6 +32,13 @@ int main(int argc, char *argv[])
             case 'p':
                 file = optarg;
                 break;
+            case 'q':
+                quad_rate = strtof(optarg, NULL);
+                break;
+            case 'a':
+                audio_rate = strtof(optarg, NULL);
+            case 'o':
+                output_rate = strtof(optarg, NULL);
             case 'h':
             default:
                 cout << "usage: " << basename(argv[0]) << " [-f freq] -p wavfile(32k)" << endl;
@@ -36,7 +46,7 @@ int main(int argc, char *argv[])
             }
     }
 
-    fm = new fm_tx(file, out_device, 1);
+    fm = new fm_tx(file, out_device, 1, audio_rate, quad_rate, output_rate);
 
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);

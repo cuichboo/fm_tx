@@ -33,7 +33,10 @@ class fm_tx
 
         fm_tx(const std::string filename,
              const std::string output_device,
-             unsigned int decimation);
+             unsigned int decimation,
+             double audio_rate,
+             double quad_rate,
+             double out_rate);
         ~fm_tx(void);
         void start(void);
         void stop(void);
@@ -85,7 +88,8 @@ class fm_tx
         gr::blocks::null_sink::sptr         audio_null_sink0; /*!< Audio null sink used during playback. */
         gr::blocks::null_sink::sptr         audio_null_sink1; /*!< Audio null sink used during playback. */
 
-        resampler_cc_sptr resample; /*!< Sniffer resampler. */
+        resampler_cc_sptr resampler; /*!< Sniffer resampler. */
+        rational_resampler_cc_sptr rational_resampler; /*!< Sniffer resampler. */
         gr::analog::frequency_modulator_fc::sptr modulator;
         gr::filter::iir_filter_ffd::sptr    preemph;
         gr::filter::interp_fir_filter_fff::sptr interpolator;

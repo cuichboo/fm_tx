@@ -26,13 +26,15 @@
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/filter/pfb_arb_resampler_ccf.h>
 #include <gnuradio/filter/pfb_arb_resampler_fff.h>
-
+#include <gnuradio/filter/rational_resampler_base_ccf.h>
 
 class resampler_cc;
 class resampler_ff;
+class rational_resampler_cc;
 
 typedef boost::shared_ptr<resampler_cc> resampler_cc_sptr;
 typedef boost::shared_ptr<resampler_ff> resampler_ff_sptr;
+typedef boost::shared_ptr<rational_resampler_cc> rational_resampler_cc_sptr;
 
 
 /*! \brief Return a shared_ptr to a new instance of resampler_cc.
@@ -92,5 +94,23 @@ private:
     std::vector<float>            d_taps;
     gr::filter::pfb_arb_resampler_fff::sptr d_filter;
 };
+
+
+rational_resampler_cc_sptr make_rational_resampler_cc(int interpolation, int decimation, float fractional_bw);
+
+class rational_resampler_cc : public gr::hier_block2
+{
+
+public:
+    rational_resampler_cc(int interpolation, int decimation, float fractional_bw);
+    ~rational_resampler_cc() {};
+
+private:
+    int gcd(int a, int b);
+    std::vector<float>            d_taps;
+    gr::filter::rational_resampler_base_ccf::sptr d_filter;
+    void design_filter(int interpolation, int decimation, float fractional_bw);
+};
+
 
 #endif // RESAMPLER_XX_H

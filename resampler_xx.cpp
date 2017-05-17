@@ -147,3 +147,68 @@ void resampler_ff::set_rate(float rate)
     connect(d_filter, 0, self(), 0);
     unlock();
 }
+
+rational_resampler_cc_sptr make_rational_resampler_cc(int interpolation, int decimation, float fractional_bw)
+{
+    return gnuradio::get_initial_sptr(new rational_resampler_cc(interpolation, decimation, fractional_bw));
+}
+
+int rational_resampler_cc::gcd(int a, int b)
+{
+    while (b) {
+        a = b;
+        b = a % b;
+    }
+    return a;
+}
+
+void rational_resampler_cc::design_filter(int interpolation, int decimation, float fractional_bw)
+{
+    if (fractional_bw >= 0.5 || fractional_bw <= 0) {
+        std::cout << "Invalid fractional_bandwidth, must be in (0, 0.5)" << std::endl;
+        assert(1);
+    }
+
+    double beta = 7.0;
+    double halfband = 0.5;
+    double trans_width, mid_transition_band;
+    double rate = (float)interpolation / (float)decimation;
+    
+    if (rate >= 1.0) {
+        trans_width = halfband - fractional_bw;
+        mid_transition_band = halfband - trans_width/2.0;
+    } else {
+        trans_width = rate*(halfband - fractional_bw);
+        mid_transition_band = rate*halfband - trans_width/2.0;
+    }
+
+    d_taps = gr::filter::firdes::low_pass(interpolation,                     //gain
+                                  interpolation,                     //Fs
+                                  mid_transition_band,               //trans mid point
+                                  trans_width,                       //transition width
+                                  gr::filter::firdes::WIN_KAISER,
+                                  beta);                             //beta
+}
+
+rational_resampler_cc::rational_resampler_cc(int interpolation, int decimation, float fractional_bw)
+    : gr::hier_block2 ("rational_resampler_cc",
+          gr::io_signature::make (1, 1, sizeof(gr_complex)),
+          gr::io_signature::make (1, 1, sizeof(gr_complex)))
+{
+    int d = 0;
+    fractional_bw = 0.4;
+
+    d = gcd(interpolation, decimation);
+    if (d > 1) {
+        interpolation /= d;
+        decimation /= d;
+    }
+
+    design_filter(interpolation, decimation, fractional_bw);
+
+    d_filter = gr::filter::rational_resampler_base_ccf::make(interpolation, decimation, d_taps);
+
+    /* connect filter */
+    connect(self(), 0, d_filter, 0);
+    connect(d_filter, 0, self(), 0);
+}

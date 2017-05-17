@@ -15,10 +15,14 @@
 
 fm_tx::fm_tx(const std::string filename,
              const std::string output_device,
-             unsigned int decimation)
-    :d_output_rate(320000.0),
-    d_quad_rate(320000),
-    d_audio_rate(32000),
+             unsigned int decimation,
+             double audio_rate,
+             double quad_rate,
+             double out_rate
+             )
+    :d_output_rate(out_rate),
+    d_quad_rate(quad_rate),
+    d_audio_rate(audio_rate),
     d_decim(decimation),
     d_rf_freq(433000000.0),
     d_max_dev(75e3)
@@ -41,7 +45,7 @@ fm_tx::fm_tx(const std::string filename,
     }
 
     output = osmosdr::sink::make(output_device);
-    resample = make_resampler_cc((float)d_output_rate/(float)d_quad_rate);
+    resampler = make_resampler_cc((float)d_output_rate/(float)d_quad_rate);
 
     do_interp = d_audio_rate != d_quad_rate;
     if (do_interp) {
@@ -122,11 +126,15 @@ fm_tx::fm_tx(const std::string filename,
     tb->connect(preemph, 0, modulator, 0);
 
 
-#if 0
+#if (0 == 1)
     tb->connect(modulator, 0, output, 0);
+#elif (1 == 1)
+    std::cout << "use rational_resampler" << std::endl;
+    tb->connect(modulator, 0, rational_resampler, 0);
+    tb->connect(rational_resampler, 0, output, 0);
 #else
-    tb->connect(modulator, 0, resample, 0);
-    tb->connect(resample, 0, output, 0);
+    tb->connect(modulator, 0, resampler, 0);
+    tb->connect(resampler, 0, output, 0);
 #endif
     
     output->set_bb_gain(20);

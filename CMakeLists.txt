@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 2.8.0)
 
 #######################################################################################################################
 # Project name
-project(fm_tx)
+project(fm_tx CXX)
+#set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 set(${PROJECT_NAME}_MAJOR "2")
 set(${PROJECT_NAME}_MINOR "5")
 set(${PROJECT_NAME}_PATCH "3")
@@ -35,13 +36,14 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
+    message(STATUS "use clang")
     add_definitions(-Wall)
     add_definitions(-Wextra)
     add_definitions(-Wno-unused-parameter)
     add_definitions(-Wsign-compare)
     add_definitions(-g)
     add_definitions(-std=c++11)
-    add_definitions(-O2)
+    add_definitions(-O3)
 endif()
 
 #######################################################################################################################
